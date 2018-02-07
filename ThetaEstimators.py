@@ -25,7 +25,8 @@ def compute_tajima_estimator(seqlist):
     for seq1, seq2 in seqs_pairwise:
         diffs_pairwise += compute_pairwise_differences(seq1, seq2)
 
-    # this is averaged over sequence length
+    # this is averaged over sequence length and number of comparisons
+    # exp number mutations per site between two lineages
     # how DNASP calculates it (nucleotide diversity)
     return diffs_pairwise/(len(seqlist[0])*number_comparisons)*100
 

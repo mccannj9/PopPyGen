@@ -48,8 +48,8 @@ def main():
     sig = compute_significance(n, k, 1/2)
     print("PROB = %s" % (sig))
 
-    n = 5
-    k = 3
+    n = 100
+    k = 25
 
     # computes bin prob for exercise 1.6
     # performing something like two-tailed binomial test
