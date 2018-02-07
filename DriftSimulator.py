@@ -19,11 +19,22 @@ def population_simulation(pop_size, num_gens, init_freq=0.5):
 
     return allele_freqs
 
+
 def main():
 
-    freqs = population_simulation(35, 200, init_freq=0.5)
+    from Plotters.BokehWrappers import plot_single_drift_simulation
+
+    nsims = 15
+
+    # simulations = []
+    # for x in range(nsim):
+    #     simulations.append()
+
+    freqs = population_simulation(50, 200, init_freq=0.5)
     for x in range(len(freqs)):
         print("Gen %s: %s" % (x+1, freqs[x]))
+
+    plot_single_drift_simulation(list(range(1,201)), freqs, "./Data/test.html")
 
     return 0
 
