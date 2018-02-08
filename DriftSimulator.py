@@ -6,7 +6,8 @@ def population_simulation(pop_size, num_gens, init_freq=0.5):
 
     trials = 2*pop_size
 
-    allele_freqs = []
+    # adding initial freq so all sims start at same value in plot
+    allele_freqs = [init_freq]
 
     for x in range(num_gens):
         success = 0
@@ -22,19 +23,23 @@ def population_simulation(pop_size, num_gens, init_freq=0.5):
 
 def main():
 
-    from Plotters.BokehWrappers import plot_single_drift_simulation
+    from Plotters.BokehWrappers import plot_multiple_drift_simulations
 
-    nsims = 15
+    nsims = 10
+    popsize = 500
+    gens = 500
 
-    # simulations = []
-    # for x in range(nsim):
-    #     simulations.append()
+    simulations = []
+    for x in range(nsims):
+        freqs = population_simulation(popsize, gens, init_freq=0.5)
+        simulations.append(freqs)
 
-    freqs = population_simulation(50, 200, init_freq=0.5)
-    for x in range(len(freqs)):
-        print("Gen %s: %s" % (x+1, freqs[x]))
+    # xdata for bokeh
+    xgenerations = [list(range(0,gens+1)) for y in range(nsims)]
 
-    plot_single_drift_simulation(list(range(1,201)), freqs, "./Data/test.html")
+    plot_multiple_drift_simulations(
+        xgenerations, simulations, "./Data/test.html"
+    )
 
     return 0
 
