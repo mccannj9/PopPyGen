@@ -1,7 +1,5 @@
 #! /usr/bin/env python
 
-from Parsers.Fasta import FastaReader
-
 
 def n_choose_k(n, k):
 
@@ -36,10 +34,8 @@ def compute_significance(n, k, p):
     return p1 + p2
 
 
-
-
 def main():
-    from math import factorial
+
     n = 485
     k = 286
 
@@ -55,6 +51,7 @@ def main():
     # performing something like two-tailed binomial test
     sig = compute_significance(n, k, 1/2)
     print("PROB = %s" % (sig))
+
 
 if __name__ == '__main__':
     main()
