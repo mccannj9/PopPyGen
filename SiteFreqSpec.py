@@ -38,10 +38,25 @@ def convert_to_binary_matrix(data_matrix):
     for site in data_matrix:
         outgroup = site[0]
         position = site[1:]
-        binrow = ["0" if base == outgroup else "1" for base in position]
+        binrow = [ 0 if base == outgroup else 1 for base in position ]
         binmat.append(binrow)
 
     return binmat
+
+
+def count_singletons(binmat):
+    singletons = 0
+    for site in binmat:
+        if site.count(1) == 1:
+            singletons += 1
+
+    return singletons
+
+
+def coalest_proportion_of_singletons(sample_size):
+    total = sum([1/k for k in range(1,sample_size)])
+
+    return 1/total
 
 
 def main():
@@ -54,10 +69,15 @@ def main():
 
     site_matrix = extract_segregating_sites(seqs)
     binary_matrix = convert_to_binary_matrix(site_matrix)
-    print(site_matrix)
-    print(binary_matrix)
-    print("SM: nrows = %s :: ncols = %s" % (len(site_matrix), len(site_matrix[0])))
-    print("BM: nrows = %s :: ncols = %s" % (len(binary_matrix), len(binary_matrix[0])))
+    # print(site_matrix)
+    # print(binary_matrix)
+    # print("SM: nrows = %s :: ncols = %s" % (len(site_matrix), len(site_matrix[0])))
+    # print("BM: nrows = %s :: ncols = %s" % (len(binary_matrix), len(binary_matrix[0])))
+
+    obs_singletons = count_singletons(binary_matrix)/len(binary_matrix)
+    exp_singletons = coalest_proportion_of_singletons(len(seqs))
+    print("Obs Single: %s" % obs_singletons)
+    print("Exp Single: %s" % exp_singletons)
 
 
 if __name__ == '__main__':
