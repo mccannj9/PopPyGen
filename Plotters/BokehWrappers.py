@@ -1,14 +1,15 @@
 #! /usr/bin/env python
 
 from bokeh.plotting import figure, output_file, show
-from bokeh.models import LabelSet, Label, Title
+from bokeh.models import Label, Title
+
 
 def plot_single_drift_simulation(xdata, ydata, output_filename):
     output_file(output_filename)
 
     p = figure(
         plot_width=600, plot_height=600,
-        x_axis_label='Generations', y_axis_label='Frequency',
+        x_axis_label="Generations", y_axis_label="Frequency",
         y_range=(0,1)
     )
 
@@ -29,7 +30,7 @@ def plot_multiple_drift_simulations(xdata_list, ydata_list, output_filename):
 
     p = figure(
         plot_width=600, plot_height=600,
-        x_axis_label='Generations', y_axis_label='Frequency',
+        x_axis_label="Generations", y_axis_label="Frequency",
         y_range=(0,1)
     )
 
@@ -44,7 +45,3 @@ def plot_multiple_drift_simulations(xdata_list, ydata_list, output_filename):
     p.add_layout(title, "above")
 
     show(p)
-
-
-if __name__ == '__main__':
-    main()

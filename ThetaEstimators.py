@@ -45,6 +45,7 @@ def compute_watterson_estimator(seqs):
         position = []
         for seq in seqs:
             position.append(seq[x])
+        # len(set) should be 1 or 2 (Infinite Sites Model)
         unique_bases = set(position)
 
         if len(unique_bases) == 2:
