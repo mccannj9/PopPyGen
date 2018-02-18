@@ -64,29 +64,101 @@ def expected_sfs_coal(sample_size):
 
 def observed_sfs_coal(binmat):
 
-    sfs = [0 for x in range(len(binmat))]
+    sfs = [0 for x in range(len(binmat[0]))]
     for row in binmat:
-        idx = row.count(1)
+        idx = row.count(1) - 1
+        sfs[idx] += 1
 
-    return 0
-
-
-def count_singletons(binmat):
-    singletons = 0
-    for site in binmat:
-        if site.count(1) == 1:
-            singletons += 1
-
-    return singletons
+    return [x/sum(sfs) for x in sfs]
 
 
-def coalest_proportion_of_singletons(sample_size):
-    total = sum([1/k for k in range(1,sample_size)])
+def prep_sfs_for_bokeh(obs_sfs, exp_sfs):
 
-    return 1/total
+    from bokeh.io import show, output_file
+    from bokeh.models import ColumnDataSource, FactorRange
+    from bokeh.plotting import figure
+    from bokeh.transform import factor_cmap
+
+    output_file("./Data/bars.html")
+    ncats = len(obs_sfs)
+    cats = ["%s/%s" % (x, ncats) for x in range(1,ncats)]
+    dtypes = ["Obs", "Exp"]
+
+    data = {
+        "cats": cats,
+        "Obs": obs_sfs,
+        "Exp": exp_sfs
+    }
+
+    x = [(cat, dtype) for cat in cats for dtype in dtypes]
+    counts = sum(zip(data['Obs'], data['Exp']), ())
+
+    source = ColumnDataSource(data=dict(x=x, counts=counts))
+
+    p = figure(
+            x_range=FactorRange(*x), plot_height=250, plot_width=1500,
+            title="Site Frequency Spectra",
+            toolbar_location=None, tools=""
+        )
+
+    p.vbar(x='x', top='counts', width=0.9, source=source)
+    # p.vbar(x='x', top='counts', width=0.9, source=source, line_color="white",
+
+    #    # use the palette to colormap based on the the x[1:2] values
+    #    fill_color=factor_cmap('x', palette=palette, factors=dtypes, start=1, end=2))
+
+    p.y_range.start = 0
+    p.x_range.range_padding = 0.1
+    p.xaxis.major_label_orientation = 1
+    p.xgrid.grid_line_color = None
+
+    show(p)
+
+
+def plot_sfs_bokeh(obs_sfs, exp_sfs):
+
+    from bokeh.core.properties import value
+    from bokeh.io import show, output_file
+    from bokeh.models import ColumnDataSource
+    from bokeh.plotting import figure
+    from bokeh.transform import dodge
+
+    output_file("./Data/dodged_bars.html")
+
+    ncats = len(obs_sfs)
+    cats = ["%s" % (x,) for x in range(1,ncats)]
+    dtypes = ["Obs", "Exp"]
+
+    data = {
+        "cats": cats,
+        "Obs": obs_sfs,
+        "Exp": exp_sfs
+    }
+
+    x = [(cat, dtype) for cat in cats for dtype in dtypes]
+    counts = sum(zip(data['Obs'], data['Exp']), ())
+
+    source = ColumnDataSource(data=data)
+
+    p = figure(x_range=cats, y_range=(0, 0.6), plot_height=500, plot_width=1000, title="Fruit Counts by Year",
+               toolbar_location=None, tools="")
+
+    p.vbar(x=dodge('cats', -0.20, range=p.x_range), top='Obs', width=0.3, source=source,
+           color="#c9d9d3", legend=value("Obs"))
+
+    p.vbar(x=dodge('cats', 0.20, range=p.x_range), top='Exp', width=0.3, source=source,
+           color="#718dbf", legend=value("Exp"))
+
+    p.x_range.range_padding = 0.1
+    p.xgrid.grid_line_color = None
+    p.legend.location = "top_left"
+    p.legend.orientation = "horizontal"
+
+    show(p)
 
 
 def main():
+    # data from Hammer et al 2004 (Human X-linked genes)
     fasta_file = "/home/jamc/Data/GitHub/PopPyGen/Data/TNFSF5_All_aligned.fas"
     fasta = FastaReader(fasta_file)
 
@@ -98,13 +170,30 @@ def main():
     binary_matrix = convert_to_binary_matrix(site_matrix)
     plot_binary_matrix(binary_matrix)
 
-    obs_singletons = count_singletons(binary_matrix)/len(binary_matrix)
-    exp_singletons = coalest_proportion_of_singletons(len(seqs))
-    print("Obs Single: %s" % obs_singletons)
-    print("Exp Single: %s" % exp_singletons)
-    exp_sfs = expected_sfs_coal(len(seqs))
+    exp_sfs = expected_sfs_coal(len(binary_matrix[0]))
+    obs_sfs = observed_sfs_coal(binary_matrix)
     print(exp_sfs)
+    print(obs_sfs)
 
+    fasta_file = "/home/jamc/Data/GitHub/PopPyGen/Data/AMELX_All_aligned.fas"
+    fasta = FastaReader(fasta_file)
+
+    seqs = []
+    for record in fasta:
+        seqs.append(record.seq)
+
+    site_matrix = extract_segregating_sites(seqs)
+    binary_matrix = convert_to_binary_matrix(site_matrix)
+    plot_binary_matrix(binary_matrix)
+
+    exp_sfs = expected_sfs_coal(len(binary_matrix[0]))
+    obs_sfs = observed_sfs_coal(binary_matrix)
+    print(exp_sfs)
+    print(obs_sfs)
+
+    print(len(exp_sfs), len(obs_sfs))
+    # prep_sfs_for_bokeh(obs_sfs, exp_sfs)
+    plot_sfs_bokeh(obs_sfs, exp_sfs)
 
 if __name__ == '__main__':
     main()
