@@ -72,49 +72,6 @@ def observed_sfs_coal(binmat):
     return [x/sum(sfs) for x in sfs]
 
 
-def prep_sfs_for_bokeh(obs_sfs, exp_sfs):
-
-    from bokeh.io import show, output_file
-    from bokeh.models import ColumnDataSource, FactorRange
-    from bokeh.plotting import figure
-    from bokeh.transform import factor_cmap
-
-    output_file("./Data/bars.html")
-    ncats = len(obs_sfs)
-    cats = ["%s/%s" % (x, ncats) for x in range(1,ncats)]
-    dtypes = ["Obs", "Exp"]
-
-    data = {
-        "cats": cats,
-        "Obs": obs_sfs,
-        "Exp": exp_sfs
-    }
-
-    x = [(cat, dtype) for cat in cats for dtype in dtypes]
-    counts = sum(zip(data['Obs'], data['Exp']), ())
-
-    source = ColumnDataSource(data=dict(x=x, counts=counts))
-
-    p = figure(
-            x_range=FactorRange(*x), plot_height=250, plot_width=1500,
-            title="Site Frequency Spectra",
-            toolbar_location=None, tools=""
-        )
-
-    p.vbar(x='x', top='counts', width=0.9, source=source)
-    # p.vbar(x='x', top='counts', width=0.9, source=source, line_color="white",
-
-    #    # use the palette to colormap based on the the x[1:2] values
-    #    fill_color=factor_cmap('x', palette=palette, factors=dtypes, start=1, end=2))
-
-    p.y_range.start = 0
-    p.x_range.range_padding = 0.1
-    p.xaxis.major_label_orientation = 1
-    p.xgrid.grid_line_color = None
-
-    show(p)
-
-
 def plot_sfs_bokeh(obs_sfs, exp_sfs):
 
     from bokeh.core.properties import value
