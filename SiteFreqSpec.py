@@ -32,16 +32,43 @@ def extract_segregating_sites(seqs, outgroup=0):
     return site_matrix
 
 
-def convert_to_binary_matrix(data_matrix):
+def convert_to_binary_matrix(site_mat):
 
     binmat = []
-    for site in data_matrix:
+    for site in site_mat:
         outgroup = site[0]
         position = site[1:]
-        binrow = [ 0 if base == outgroup else 1 for base in position ]
+        binrow = [0 if base == outgroup else 1 for base in position]
         binmat.append(binrow)
 
     return binmat
+
+
+def plot_binary_matrix(binmat):
+
+    # binmat = transpose_list_of_lists(binmat)
+    for row in binmat:
+        out = "".join([str(x) for x in row])
+        print(out)
+
+
+def expected_sfs_coal(sample_size):
+
+    total = sum([1/k for k in range(1,sample_size)])
+    sfs = []
+    for j in range(1, sample_size):
+        sfs.append((1/j)/total)
+
+    return sfs
+
+
+def observed_sfs_coal(binmat):
+
+    sfs = [0 for x in range(len(binmat))]
+    for row in binmat:
+        idx = row.count(1)
+
+    return 0
 
 
 def count_singletons(binmat):
@@ -69,15 +96,14 @@ def main():
 
     site_matrix = extract_segregating_sites(seqs)
     binary_matrix = convert_to_binary_matrix(site_matrix)
-    # print(site_matrix)
-    # print(binary_matrix)
-    # print("SM: nrows = %s :: ncols = %s" % (len(site_matrix), len(site_matrix[0])))
-    # print("BM: nrows = %s :: ncols = %s" % (len(binary_matrix), len(binary_matrix[0])))
+    plot_binary_matrix(binary_matrix)
 
     obs_singletons = count_singletons(binary_matrix)/len(binary_matrix)
     exp_singletons = coalest_proportion_of_singletons(len(seqs))
     print("Obs Single: %s" % obs_singletons)
     print("Exp Single: %s" % exp_singletons)
+    exp_sfs = expected_sfs_coal(len(seqs))
+    print(exp_sfs)
 
 
 if __name__ == '__main__':
