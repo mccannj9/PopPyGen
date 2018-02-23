@@ -72,7 +72,7 @@ def observed_sfs_coal(binmat):
     return [x/sum(sfs) for x in sfs]
 
 
-def plot_sfs_bokeh(obs_sfs, exp_sfs):
+def plot_sfs_bokeh(obs_sfs, exp_sfs, graph_output_file, gene_name):
 
     from bokeh.core.properties import value
     from bokeh.io import show, output_file
@@ -80,7 +80,7 @@ def plot_sfs_bokeh(obs_sfs, exp_sfs):
     from bokeh.plotting import figure
     from bokeh.transform import dodge
 
-    output_file("./Data/dodged_bars.html")
+    output_file(graph_output_file)
 
     ncats = len(obs_sfs)
     cats = ["%s" % (x,) for x in range(1,ncats)]
@@ -93,15 +93,15 @@ def plot_sfs_bokeh(obs_sfs, exp_sfs):
     }
 
     x = [(cat, dtype) for cat in cats for dtype in dtypes]
-    counts = sum(zip(data['Obs'], data['Exp']), ())
+    # counts = sum(zip(data['Obs'], data['Exp']), ())
 
     source = ColumnDataSource(data=data)
 
-    p = figure(x_range=cats, y_range=(0, 0.6), plot_height=500, plot_width=1000, title="Fruit Counts by Year",
+    p = figure(x_range=cats, y_range=(0, 0.6), plot_height=500, plot_width=1000, title="%s SFS" % gene_name,
                toolbar_location=None, tools="")
 
     p.vbar(x=dodge('cats', -0.20, range=p.x_range), top='Obs', width=0.3, source=source,
-           color="#c9d9d3", legend=value("Obs"))
+           color="#e84d60", legend=value("Obs"))
 
     p.vbar(x=dodge('cats', 0.20, range=p.x_range), top='Exp', width=0.3, source=source,
            color="#718dbf", legend=value("Exp"))
@@ -132,6 +132,9 @@ def main():
     print(exp_sfs)
     print(obs_sfs)
 
+    print(len(exp_sfs), len(obs_sfs))
+    plot_sfs_bokeh(obs_sfs, exp_sfs, "./Data/dodged_bars_TNFSF5.html", "TNFSF5")
+
     fasta_file = "/home/jamc/Data/GitHub/PopPyGen/Data/AMELX_All_aligned.fas"
     fasta = FastaReader(fasta_file)
 
@@ -149,8 +152,7 @@ def main():
     print(obs_sfs)
 
     print(len(exp_sfs), len(obs_sfs))
-    # prep_sfs_for_bokeh(obs_sfs, exp_sfs)
-    plot_sfs_bokeh(obs_sfs, exp_sfs)
+    plot_sfs_bokeh(obs_sfs, exp_sfs, "./Data/dodged_bars_AMELX.html", "AMELX")
 
 if __name__ == '__main__':
     main()

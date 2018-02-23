@@ -1,21 +1,14 @@
 #! /usr/bin/env python3
 
+
 from SeqIO import Sequence
 
 
-def trim_read(fq_obj, trim=0):
-    if trim > 0:
-        fq_obj.seq = fq_obj.seq[trim:]
-    elif trim < 0:
-        fq_obj.seq = fq_obj.seq[::-1][trim:][::-1]
-    return fq_obj
-
-
-class FastaReader(object):
+class PhylipReader(object):
     """
-    Reader for FASTA files.
+    Reader for Phylip files.
     """
-    def __init__(self, file, wholefile=False, keep_linebreaks=False, sequence_class=Sequence):
+    def __init__(self, file, keep_linebreaks=False, sequence_class=Sequence):
         """
         file is a filename or a file-like object.
         If file is a filename, then .gz files are supported.
@@ -29,7 +22,9 @@ class FastaReader(object):
         file = open(file)
         self.fp = file
         self.sequence_class = sequence_class
-        self.delivers_qualities = False
+        header = self.fp.readline().strip().split()
+        self.nindividuals = int(header[0])
+        self.nloci = int(header[1])
 
     def __iter__(self):
         """
@@ -37,21 +32,12 @@ class FastaReader(object):
 
         # TODO this can be quadratic since += is used for the sequence string
         """
-        name = None
-        seq = ''
+
         for line in self.fp:
             # strip() should also take care of DOS line breaks
-            line = line.strip()
-            if line and line[0] == '>':
-                if name is not None:
-                    assert seq.find('\n') == -1
-                    yield self.sequence_class(name, seq, None, "fasta")
-                name = line[1:]
-                seq = ''
-            else:
-                seq += line
-        if name is not None:
-            assert seq.find('\n') == -1
+            line = line.strip().split()
+            name = line[0]
+            seq = line[1]
             yield self.sequence_class(name, seq, None, "fasta")
 
     def __enter__(self):
@@ -61,3 +47,9 @@ class FastaReader(object):
 
     def __exit__(self, *args):
         self.fp.close()
+
+
+if __name__ == '__main__':
+    phy = PhylipReader("/home/jamc/Data/GitHub/PopPyGen/Data/sback.phy")
+    for seq in phy:
+        print(seq)
