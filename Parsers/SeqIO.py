@@ -3,8 +3,10 @@
 
 class Sequence:
 
-    """Sequence object that can be used for generating sequence objects
-       from fasta files, things can be added as needed for other applications"""
+    """
+        Sequence object that can be used for generating sequence objects
+        from fasta files, things can be added as needed for other applications
+    """
 
     def __init__(self, name="", seq="", qual="", seqform=""):
         self.name = name
@@ -18,7 +20,7 @@ class Sequence:
 
     def reverse_complement(self):
         self.seq = reverseCompSequence(self.seq)
-        self.qual = reverseSequence(self.qual)
+        self.qual = self.qual[::-1]
         self.is_revcomp = not(self.is_revcomp)
 
     def fasta_oneline(self):
@@ -69,3 +71,111 @@ def reverseCompSequence(sequence):
 
     return tmp
 
+
+class FastaReader(object):
+    """
+    Reader for FASTA files.
+    """
+    def __init__(self, file, wholefile=False, keep_linebreaks=False, sequence_class=Sequence):
+        """
+        file is a filename or a file-like object.
+        If file is a filename, then .gz files are supported.
+        If wholefile is True, then it is ok to read the entire file
+        into memory. This is faster when there are many newlines in
+        the file, but may obviously need a lot of memory.
+        keep_linebreaks -- whether to keep the newline characters in the sequence
+        """
+        #if isinstance(file, basestring):
+        #   file = xopen(file)
+        file = open(file)
+        self.fp = file
+        self.sequence_class = sequence_class
+        self.delivers_qualities = False
+
+    def __iter__(self):
+        """
+        Read next entry from the file (single entry at a time).
+
+        # TODO this can be quadratic since += is used for the sequence string
+        """
+        name = None
+        seq = ''
+        for line in self.fp:
+            # strip() should also take care of DOS line breaks
+            line = line.strip()
+            if line and line[0] == '>':
+                if name is not None:
+                    assert seq.find('\n') == -1
+                    yield self.sequence_class(name, seq, None, "fasta")
+                name = line[1:]
+                seq = ''
+            else:
+                seq += line
+        if name is not None:
+            assert seq.find('\n') == -1
+            yield self.sequence_class(name, seq, None, "fasta")
+
+    def __enter__(self):
+        if self.fp is None:
+            raise ValueError("I/O operation on closed FastaReader")
+        return self
+
+    def __exit__(self, *args):
+        self.fp.close()
+
+
+def trim_read(fq_obj, trim=0):
+    if trim > 0:
+        fq_obj.seq = fq_obj.seq[trim:]
+    elif trim < 0:
+        fq_obj.seq = fq_obj.seq[::-1][trim:][::-1]
+    return fq_obj
+
+
+class PhylipReader(object):
+    """
+    Reader for Phylip files.
+    """
+    def __init__(self, file, keep_linebreaks=False, sequence_class=Sequence):
+        """
+        file is a filename or a file-like object.
+        If file is a filename, then .gz files are supported.
+        If wholefile is True, then it is ok to read the entire file
+        into memory. This is faster when there are many newlines in
+        the file, but may obviously need a lot of memory.
+        keep_linebreaks -- whether to keep the newline characters in the sequence
+        """
+
+        file = open(file)
+        self.fp = file
+        self.sequence_class = sequence_class
+        header = self.fp.readline().strip().split()
+        self.nind = int(header[0])
+        self.nloci = int(header[1])
+
+    def __iter__(self):
+        """
+        Read next entry from the file (single entry at a time).
+
+        # TODO this can be quadratic since += is used for the sequence string
+        """
+
+        for line in self.fp:
+            # strip() should also take care of DOS line breaks
+            line = line.strip().split()
+            name = line[0]
+            seq = line[1]
+            yield self.sequence_class(name, seq, None, "fasta")
+
+    def __enter__(self):
+        if self.fp is None:
+            raise ValueError("I/O operation on closed FastaReader")
+        return self
+
+    def __exit__(self, *args):
+        self.fp.close()
+
+    def __str__(self):
+        return "Phylip Filename: %s\nInd: %s -- Loci: %s" % (
+            self.fp.name, self.nind, self.nloci
+        )

@@ -133,7 +133,9 @@ def main():
     print(obs_sfs)
 
     print(len(exp_sfs), len(obs_sfs))
-    plot_sfs_bokeh(obs_sfs, exp_sfs, "./Data/dodged_bars_TNFSF5.html", "TNFSF5")
+    plot_sfs_bokeh(
+        obs_sfs, exp_sfs, "./Data/dodged_bars_TNFSF5.html", "TNFSF5"
+    )
 
     fasta_file = "/home/jamc/Data/GitHub/PopPyGen/Data/AMELX_All_aligned.fas"
     fasta = FastaReader(fasta_file)
